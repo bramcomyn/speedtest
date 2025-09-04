@@ -1,0 +1,10 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "speedtest-core"
+version = "0.1.0"
+description = "Rust core for speedtest (with Python bindings)"
+authors = [{ name = "bram comyn" }]
+dependencies = []
