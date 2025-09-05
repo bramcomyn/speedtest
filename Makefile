@@ -1,15 +1,23 @@
-.PHONY: core cli server web all
+.PHONY: core cli server all clean
+
+BUILD ?= debug
+
+ifeq ($(BUILD),release)
+	CARGO_FLAGS := --release
+else
+	CARGO_FLAGS :=
+endif
+
+all: core cli server
+
+clean:
+	rm -rf core/target cli/target server/target
 
 core:
-	cd core && maturin develop
+	cargo build $(CARGO_FLAGS) --manifest-path core/Cargo.toml
 
-cli: core
-	cd cli && python -m speedtest-cli greet
+cli:
+	cargo build $(CARGO_FLAGS) --manifest-path cli/Cargo.toml
 
 server:
-	cd server && cargo run
-
-web:
-	cd web && npm install && npm run dev
-
-all: core cli server web
+	cargo build $(CARGO_FLAGS) --manifest-path server/Cargo.toml
