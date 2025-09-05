@@ -54,12 +54,14 @@ pub fn measure_latency(
         let mut read = 0usize;
         while read < rx.len() {
             let n = stream.read(&mut rx[read..])?;
+            
             if n == 0 {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::ConnectionAborted,
                     "connection closed by peer",
                 ));
             }
+
             read += n;
         }
 

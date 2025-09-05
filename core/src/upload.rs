@@ -4,6 +4,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use spinoff::{spinners, Color, Spinner};
+
 pub struct UploadSample {
     pub seconds_elapsed: f64,
     pub mbps: f64,
@@ -39,6 +41,7 @@ pub fn run_upload_test(
     let mut next_sample = sample_interval;
 
     let mut results = Vec::new();
+    let mut spinner = Spinner::new(spinners::Dots, "upload", Color::Cyan);
     
     let start = Instant::now();
     while start.elapsed().as_secs_f64() < duration_sec {
@@ -53,6 +56,9 @@ pub fn run_upload_test(
             next_sample += sample_interval
         }
     }
+
+    stream.shutdown(std::net::Shutdown::Both)?;
+    spinner.success("finished upload");
 
     let elapsed = start.elapsed().as_secs_f64();
     let mbps = total_bytes as f64 * 8.0 / 1_000_000.0 / elapsed;

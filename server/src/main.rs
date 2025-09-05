@@ -1,4 +1,4 @@
-use std::{io::{Read, Write}, net::{TcpListener, TcpStream}, time::{Duration, Instant}};
+use std::{io::{Read, Write}, net::{TcpListener, TcpStream}};
 
 async fn handle(mut socket: TcpStream) -> tokio::io::Result<()> {
     let mut buf = [0u8; 64 * 1024];
@@ -6,26 +6,26 @@ async fn handle(mut socket: TcpStream) -> tokio::io::Result<()> {
 
     loop {
         match buf[0] {
-            0 => { // ping
+            0 => {
                 let n = socket.read(&mut buf[1..])?;
                 if n == 0 { break ; }
                 socket.write_all(&buf[1..n+1])?;
                 socket.flush()?;
             },
-            1 => { // download
-                let start = Instant::now();
-                let duration = Duration::from_secs(10);
-
-                while start.elapsed() < duration {
-                    socket.write_all(&buf)?;
+            1 => {
+                loop {
+                    if let Err(e) = socket.write_all(&buf) {
+                        eprintln!("Download stream ended with error: {e}");
+                        return Ok(());
+                    }
                 }
             },
-            2 => { // upload
-                let start = Instant::now();
-                let duration = Duration::from_secs(10);
-
-                while start.elapsed() < duration {
-                    let _ = socket.read_exact(&mut buf)?;
+            2 => {
+                loop {
+                    if let Err(e) = socket.read_exact(&mut buf) {
+                        eprintln!("Download stream ended with error: {e}");
+                        return Ok(());
+                    }
                 }
             },
             _ => break,
