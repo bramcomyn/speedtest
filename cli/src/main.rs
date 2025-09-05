@@ -22,22 +22,22 @@ enum Commands {
 
     },
     Ping {
-        #[arg(default_value_t = String::from("127.0.0.1"))]
+        #[arg(long, default_value_t = String::from("127.0.0.1"))]
         host: String,
         
-        #[arg(default_value_t = 5001)]
+        #[arg(long, default_value_t = 5001)]
         port: u16,
 
-        #[arg(default_value_t = 20)]
+        #[arg(long, default_value_t = 20)]
         count: u32,
         
-        #[arg(default_value_t = 32)]
+        #[arg(long, default_value_t = 32)]
         payload_size: usize,
         
-        #[arg(default_value_t = 1000)]
+        #[arg(long, default_value_t = 1000)]
         timeout_ms: u64,
         
-        #[arg(default_value_t = 2)]
+        #[arg(long, default_value_t = 2)]
         warmup: u32,
     }
 }
@@ -50,7 +50,7 @@ fn main() {
         }
         Some(Commands::Ping { host, port, count, payload_size, timeout_ms, warmup }) => {
             match measure_latency(
-                host, *port, *count, *payload_size, *timeout_ms, *warmup
+                &host, *port, *count, *payload_size, *timeout_ms, *warmup
             ) {
                 Ok(stats) => {
                     println!("Latency results for {}:{}", host, port);

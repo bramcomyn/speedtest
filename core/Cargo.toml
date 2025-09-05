@@ -5,6 +5,7 @@ edition = "2021"
 
 [lib]
 name = "speedtest_core"
+crate-type = ["rlib"]
 
 [dependencies]
 kdam = "0.6.3"
