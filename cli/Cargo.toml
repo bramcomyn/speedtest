@@ -6,3 +6,6 @@ edition = "2024"
 [dependencies]
 speedtest-core = { path = "../core" }
 clap = { version = "4.5.47", features = ["derive"] }
+spinoff = "0.8.0"
+anyhow = "1.0.99"
+

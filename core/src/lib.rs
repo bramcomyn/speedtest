@@ -1,6 +1,6 @@
-pub mod latency;
-pub mod download;
-pub mod upload;
+mod latency;
+mod download;
+mod upload;
 
 pub use latency::{LatencyStats, measure_latency};
 pub use download::{DownloadSample, run_download_test};

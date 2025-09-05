@@ -4,8 +4,6 @@ use std::{
     time::{Duration, Instant},
 };
 
-use kdam::tqdm;
-
 pub struct LatencyStats {
     pub avg_ms: f64,
     pub min_ms: f64,
@@ -42,30 +40,17 @@ pub fn measure_latency(
     let mut rx = vec![0u8; tx.len()];
 
     let mut samples_ms = Vec::with_capacity(count as usize);
-    
-    let total = warmup + count;
-    for i in tqdm!(0..total, desc = "ping") {
-        tx[0..8].copy_from_slice(&(i as u64).to_le_bytes());
+
+    for i in 0..(warmup + count) {
+        tx[..8].copy_from_slice(&(i as u64).to_le_bytes());
+
         let t0 = Instant::now();
-
         stream.write_all(&tx)?;
-        stream.flush().ok();
+        stream.flush()?;
 
-        let mut read = 0usize;
-        while read < rx.len() {
-            let n = stream.read(&mut rx[read..])?;
-            
-            if n == 0 {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::ConnectionAborted,
-                    "connection closed by peer",
-                ));
-            }
+        stream.read_exact(&mut rx)?;
 
-            read += n;
-        }
-
-        if rx[0..8] != tx[0..8] {
+        if rx[..8] != tx[..8] {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
                 "echo mismatch",
@@ -78,6 +63,7 @@ pub fn measure_latency(
     }
 
     let (avg, min, max, jitter) = compute_stats(&samples_ms);
+
     Ok(LatencyStats {
         avg_ms: avg,
         min_ms: min,
@@ -88,15 +74,22 @@ pub fn measure_latency(
 }
 
 fn compute_stats(samples_ms: &[f64]) -> (f64, f64, f64, f64) {
+    if samples_ms.is_empty() {
+        return (0.0, 0.0, 0.0, 0.0);
+    }
+
     let n = samples_ms.len() as f64;
     let min = samples_ms.iter().cloned().fold(f64::INFINITY, f64::min);
     let max = samples_ms.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
     let avg = samples_ms.iter().sum::<f64>() / n;
-    let var = if samples_ms.len() > 1 {
-        samples_ms.iter().map(|x| (x - avg).powi(2)).sum::<f64>() / n
+
+    // RFC 5481: mean absolute delta of consecutive samples
+    let mean_jitter = if samples_ms.len() > 1 {
+        samples_ms.windows(2).map(|w| (w[1] - w[0]).abs()).sum::<f64>() 
+            / (samples_ms.len() - 1) as f64
     } else {
         0.0
     };
-    let stddev = var.sqrt();
-    (avg, min, max, stddev)
+
+    (avg, min, max, mean_jitter)
 }

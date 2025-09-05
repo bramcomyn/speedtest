@@ -9,4 +9,3 @@ crate-type = ["rlib"]
 
 [dependencies]
 kdam = "0.6.3"
-spinoff = "0.8.0"
