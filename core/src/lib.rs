@@ -1,5 +1,6 @@
 use std::{io::{Read, Write}, net::{TcpStream, ToSocketAddrs}, time::{Duration, Instant}};
 
+use kdam::tqdm;
 use pyo3::{prelude::*};
 
 #[pyfunction]
@@ -35,19 +36,15 @@ pub struct LatencyStats {
 
 fn compute_stats(samples_ms: &[f64]) -> (f64, f64, f64, f64) {
     let n = samples_ms.len() as f64;
-    
     let min = samples_ms
         .iter()
         .cloned()
         .fold(f64::INFINITY, f64::min);
-
     let max = samples_ms
         .iter()
         .cloned()
         .fold(f64::NEG_INFINITY, f64::max);
-
     let avg = samples_ms.iter().sum::<f64>() / n;
-
     let var = if samples_ms.len() > 1 {
         samples_ms.iter().map(|x| (x - avg).powi(2)).sum::<f64>() / n
     } else {
@@ -96,7 +93,7 @@ fn measure_latency(
     
     let total = warmup + count;
 
-    for i in 0..total {
+    for i in tqdm!(0..total) {
         tx[0..8].copy_from_slice(&(i as u64).to_le_bytes());
 
         let t0 = Instant::now();

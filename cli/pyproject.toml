@@ -3,7 +3,7 @@ name = "speedtest-cli"          # Package name on PyPI or poetry
 version = "0.1.0"
 description = "Python CLI for the Rust speedtest core"
 authors = ["Bram Comyn <comyn.bram@gmail.com>"]
-packages = [{ include = "speedtest-cli" }]
+packages = [{ include = "speedtest_cli" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -11,7 +11,7 @@ click = "^8.1"
 speedtest-core = { path = "../core" }
 
 [tool.poetry.scripts]
-speedtest-cli = "speedtest-cli.__main__:cli"
+speedtest-cli = "speedtest_cli.__main__:cli"
 
 [build-system]
 requires = ["poetry-core>=1.5.0"]
