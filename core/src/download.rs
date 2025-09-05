@@ -4,6 +4,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+use kdam::{tqdm, BarExt};
+
 pub struct DownloadSample {
     pub seconds_elapsed: f64,
     pub mbps: f64,
@@ -39,6 +41,9 @@ pub fn run_download_test(
     let mut next_sample = sample_interval;
 
     let mut results = Vec::new();
+
+    let mut progress = tqdm!(total = (duration_sec * 1_000.0).floor() as usize, desc = "download");
+    let mut last_elapsed = 0.0;
     
     let start = Instant::now();
     while start.elapsed().as_secs_f64() < duration_sec {
@@ -47,6 +52,8 @@ pub fn run_download_test(
         total_bytes += n;
 
         let elapsed = start.elapsed().as_secs_f64();
+        progress.update(((elapsed - last_elapsed) * 1_000.0).floor() as usize)?;
+        last_elapsed = elapsed;
 
         if elapsed > next_sample {
             let mbps = total_bytes as f64 * 8.0 / 1_000_000.0 / elapsed;
