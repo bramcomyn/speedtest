@@ -14,16 +14,14 @@ async fn handle(mut socket: TcpStream) -> tokio::io::Result<()> {
             },
             1 => {
                 loop {
-                    if let Err(e) = socket.write_all(&buf) {
-                        eprintln!("Download stream ended with error: {e}");
+                    if let Err(_e) = socket.write_all(&buf) {
                         return Ok(());
                     }
                 }
             },
             2 => {
                 loop {
-                    if let Err(e) = socket.read_exact(&mut buf) {
-                        eprintln!("Download stream ended with error: {e}");
+                    if let Err(_e) = socket.read_exact(&mut buf) {
                         return Ok(());
                     }
                 }
