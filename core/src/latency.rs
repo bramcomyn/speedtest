@@ -30,16 +30,21 @@ pub fn measure_latency(
 
     let mut stream = TcpStream::connect(target)?;
     stream.set_nodelay(true)?;
+
     let timeout = Some(Duration::from_millis(timeout_ms));
     stream.set_read_timeout(timeout)?;
     stream.set_write_timeout(timeout)?;
 
+    stream.write_all(&[0u8; 1])?;
+    stream.flush()?;
+
     let mut tx = vec![0u8; payload_size.max(8)];
     let mut rx = vec![0u8; tx.len()];
-    let mut samples_ms = Vec::with_capacity(count as usize);
-    let total = warmup + count;
 
-    for i in tqdm!(0..total, desc = "Pinging") {
+    let mut samples_ms = Vec::with_capacity(count as usize);
+    
+    let total = warmup + count;
+    for i in tqdm!(0..total, desc = "ping") {
         tx[0..8].copy_from_slice(&(i as u64).to_le_bytes());
         let t0 = Instant::now();
 

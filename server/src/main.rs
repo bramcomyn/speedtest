@@ -1,15 +1,37 @@
-use std::{io::{Read, Write}, net::{TcpListener, TcpStream}};
+use std::{io::{Read, Write}, net::{TcpListener, TcpStream}, time::{Duration, Instant}};
 
-async fn handle(mut sock: TcpStream) -> tokio::io::Result<()> {
-    let mut buf = vec![0u8; 64 * 1024];
+async fn handle(mut socket: TcpStream) -> tokio::io::Result<()> {
+    let mut buf = [0u8; 64 * 1024];
+    socket.read_exact(&mut buf[0..1])?;
+
     loop {
-        let n = sock.read(&mut buf)?;
-        if n == 0 {
-            break;
+        match buf[0] {
+            0 => { // ping
+                let n = socket.read(&mut buf[1..])?;
+                if n == 0 { break ; }
+                socket.write_all(&buf[1..n+1])?;
+                socket.flush()?;
+            },
+            1 => { // download
+                let start = Instant::now();
+                let duration = Duration::from_secs(10);
+
+                while start.elapsed() < duration {
+                    socket.write_all(&buf)?;
+                }
+            },
+            2 => { // upload
+                let start = Instant::now();
+                let duration = Duration::from_secs(10);
+
+                while start.elapsed() < duration {
+                    let _ = socket.read_exact(&mut buf)?;
+                }
+            },
+            _ => break,
         }
-        sock.write_all(&buf[..n])?;
-        sock.flush()?;
     }
+    
     Ok(())
 }
 
